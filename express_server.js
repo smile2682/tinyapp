@@ -37,19 +37,42 @@ app.post("/urls", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
 });
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
+
+
 function generateRandomString() {
   const shortURL = Math.random().toString(36).substr(2, 6);
   return shortURL;
 }
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
+  
+//delete a URL
+app.post("/urls/:shortURL/delete",(req,res)=>{
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+
+  res.redirect ('/urls')
+  })
+
+//edit a URL
+app.post("/urls/:shortURL",(req,res)=>{
+  const shortURL = req.params.shortURL;
+  const newURL = req.body.newURL;
+  urlDatabase[shortURL]=newURL;
+
+  res.redirect ('/urls')
+  })
+
+
+
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
