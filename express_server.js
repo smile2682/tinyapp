@@ -10,16 +10,31 @@ app.use(cookieParser())
 const morgan = require ('morgan')
 app.use(morgan('dev'))
 
-//set the in-memory database
+//set the in-memory database for url pairs
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
+//set the in-memory database for users
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+
 //Read -the new url page
 app.get("/urls/new", (req, res) => {
   const templateVars = { 
-    username: req.cookies["loginName"]
+    user:users[req.cookies.user_id]
    };
   res.render("urls_new",templateVars);
 });
@@ -28,7 +43,8 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase, 
-    username: req.cookies["loginName"] };
+    user:users[req.cookies.user_id]
+  };
   
   res.render("urls_index", templateVars);
 });
@@ -38,7 +54,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    user:users[req.cookies.user_id]
   };
   // console.log(req.params)
   // console.log(req.params.shortURL)
@@ -90,22 +106,62 @@ app.post('/login', (req,res)=>{
   const loginName = req.body.login;
   res.cookie('loginName',loginName);
   res.redirect ('/urls')
+ 
 })
 
-//Add -clear a cookie and rediect the client to /urls
+//Delete -clear a cookie and rediect the client to /urls
 app.post('/logout', (req,res)=>{
-  const logout = req.body.logout;
+  // const logout = req.body.logout;
   res.clearCookie('loginName');
   res.redirect ('/urls')
 })
 
+// GET /register
+app.get('/register', (req, res) => {
+  res.render('register');
+});
 
-// //
-// const templateVars = {
-//   username: res.cookies["username"],
-//   // ... any other vars
-// };
-// res.render("urls_index", templateVars);
+// POST /register
+app.post('/register', (req, res) => {
+  const id = generateRandomString();
+  const email=req.body.email;
+  const password =req.body.password;
+  if (email.length === 0 || password.length === 0){
+    res.status(400);
+    res.send('No empty allowed!')
+  }
+  if (findUserByEmail(email)){
+    res.status(400);
+    res.send('This email is already registered!')
+  }else{
+    users[id] = {
+      id,
+      email,
+      password
+      };
+    console.log(users);
+    res.cookie('user_id',id);
+  // console.log(res.cookie.user_id);
+  res.redirect('/urls');
+  }
+})
+  
+//email look up func
+const findUserByEmail = (email) => {
+  for (const id in users) {
+    const user = users[id];
+    if (user.email === email) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// Get login page
+app.get('/login', (req, res) => {
+
+  res.render('login')
+})
 
 
 
