@@ -101,24 +101,41 @@ app.post("/urls/:shortURL",(req,res)=>{
   res.redirect ('/urls')
   })
 
-//Add -take the username and build a cookie
+//Add -take and verify the email and password and build a cookie of user_id
 app.post('/login', (req,res)=>{
-  const loginName = req.body.login;
-  res.cookie('loginName',loginName);
-  res.redirect ('/urls')
- 
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!findUserByEmail(email)){
+    res.status(403);
+    res.send('User does not exist! Please register first!')
+  };
+  
+  for (const id in users){
+      const user = users[id];
+      console.log('user.password', user.password)
+      console.log('password',password)
+    if(user.password===password){
+      res.cookie('user_id',id)
+      res.redirect('/urls')
+    }
+  }
+      res.status(403);
+      res.send('Wrong password!')
 })
 
 //Delete -clear a cookie and rediect the client to /urls
 app.post('/logout', (req,res)=>{
   // const logout = req.body.logout;
-  res.clearCookie('loginName');
+  res.clearCookie('user_id');
   res.redirect ('/urls')
 })
 
 // GET /register
 app.get('/register', (req, res) => {
-  res.render('register');
+  const templateVars = { 
+    user:users[req.cookies.user_id]
+   };
+  res.render('register',templateVars);
 });
 
 // POST /register
@@ -159,8 +176,10 @@ const findUserByEmail = (email) => {
 
 // Get login page
 app.get('/login', (req, res) => {
-
-  res.render('login')
+  const templateVars = { 
+    user:users[req.cookies.user_id]
+   };
+  res.render('login', templateVars)
 })
 
 
