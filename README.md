@@ -4,11 +4,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["register page"](https://github.com/smile2682/tinyapp/blob/b3138a7a05005f0dd2915c5a3d4dddae939846b9/docs/register-page.png?raw=true)
+![register page](https://github.com/smile2682/tinyapp/blob/b3138a7a05005f0dd2915c5a3d4dddae939846b9/docs/register-page.png?raw=true)
 
-!["create your own short urls!"](https://github.com/smile2682/tinyapp/blob/b3138a7a05005f0dd2915c5a3d4dddae939846b9/docs/create-new-url.png?raw=true)
+![create your own short urls!](https://github.com/smile2682/tinyapp/blob/b3138a7a05005f0dd2915c5a3d4dddae939846b9/docs/create-new-url.png?raw=true)
 
-!["your short urls database!"](https://github.com/smile2682/tinyapp/blob/b3138a7a05005f0dd2915c5a3d4dddae939846b9/docs/urls-page.png?raw=true)
+![your short urls database!](https://github.com/smile2682/tinyapp/blob/b3138a7a05005f0dd2915c5a3d4dddae939846b9/docs/urls-page.png?raw=true)
 
 ## Dependencies
 
