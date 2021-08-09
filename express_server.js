@@ -13,16 +13,20 @@ app.use(cookieSession({
 const morgan = require('morgan')
 app.use(morgan('dev'))
 const bcrypt = require('bcrypt');
-const {findUserByEmail, generateRandomString, getUrlsForUser,urlDatabase, users} = require('./helper')
+const { findUserByEmail, generateRandomString, getUrlsForUser, urlDatabase, users } = require('./helper')
 
 
 
 //GETS:
 // Get login page
 app.get('/login', (req, res) => {
+  const userID = req.session.user_id;
   const templateVars = {
-    user: users[req.session.user_id]
+    user: users[userID]
   };
+  if (userID) {
+    return res.redirect('/urls');
+  }
   res.render('login', templateVars)
 })
 
@@ -37,9 +41,13 @@ app.get("/", (req, res) => {
 
 // GET /register
 app.get('/register', (req, res) => {
+  const userID = req.session.user_id;
   const templateVars = {
-    user: users[req.session.user_id]
+    user: users[userID]
   };
+  if (userID) {
+    return res.redirect('/urls');
+  }
   res.render('register', templateVars);
 });
 
@@ -55,7 +63,6 @@ app.get("/hello", (req, res) => {
 
 //Get/Read -the new url page
 app.get("/urls/new", (req, res) => {
-  const singleUserDb = getUrlsForUser(req.session.user_id);
   const user = users[req.session.user_id]
   const templateVars = {
     user: users[req.session.user_id]
@@ -85,9 +92,13 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const singleUserDb = getUrlsForUser(req.session.user_id);
   const shortURL = req.params.shortURL;
+  const userID = req.session.user_id;
+  if (!userID) {
+    return res.status(400).send("<h1>Please <a href='/login'>login first!</a></h1>")
+  }
   if (!singleUserDb[shortURL]) {
-    if(urlDatabase[shortURL]){
-    return res.send("<h1> Unauthorized to see the short url requested! <a href='/urls'>BACK</a></h1>")
+    if (urlDatabase[shortURL]) {
+      return res.send("<h1> Unauthorized to see the short url requested! <a href='/urls'>BACK</a></h1>")
     }
   };
   if (!urlDatabase[shortURL]) {
@@ -102,29 +113,33 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 //Get/Read -the shortURL created and redirect the client to the actuall website
+//everyone should be able to see! that is the basic function of this app!
 app.get("/u/:shortURL", (req, res) => {
-  const singleUserDb = getUrlsForUser(req.session.user_id);
   const shortURL = req.params.shortURL;
-  const keys = Object.keys(singleUserDb);
-  for (const key of keys) {
-    if (shortURL === key) {
-      return res.redirect(singleUserDb[req.params.shortURL].longURL);
-    }
+  const databaseUrl = urlDatabase[shortURL];
+  if (!databaseUrl) {
+    return res.send('The requested short URL does not exist!')
   }
-  res.redirect('/urls')
+  return res.redirect(databaseUrl.longURL);
 });
 
 //POSTS:
 //Post/Add -use the long url client provided to create a short url, add it to the database and show it in the redirected single url page.
 app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longUrl,
-    userID: req.session.user_id
+  //define all variables here:
+  const shortURL = generateRandomString();
+  const userID = req.session.user_id;
+  const longURL = req.body.longUrl;
+//if the user is not logged in:
+  if(!userID){
+    return res.status(400).send ("<h1>Please <a href='/login'>login first!</a></h1>")
   }
-  console.log(urlDatabase[shortURL]);
-  console.log(req.body.longUrl)
-
+  //if logged in, return the newly generated url in /urls
+  urlDatabase[shortURL] = {
+    longURL,
+    userID
+  }
+  
   res.redirect(`/urls/${shortURL}`);
 });
 
